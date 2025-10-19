@@ -2,6 +2,31 @@ const express = require("express");
 const multer = require("multer");
 const Complaint = require("../models/Complaint");
 const User = require("../models/User");
+const nodemailer = require("nodemailer");
+
+// -------------------- EMAIL SENDER --------------------
+const sendEmail = async (to, subject, text) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,   // your Gmail
+        pass: process.env.EMAIL_PASS    // Gmail App Password if 2FA enabled
+      },
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to,
+      subject,
+      text
+    });
+
+    console.log(`✅ Email sent to ${to}`);
+  } catch (err) {
+    console.error("⚠️ Email sending failed:", err.message);
+  }
+};
 
 module.exports = (io, userSockets) => {
   const router = express.Router();
@@ -101,7 +126,7 @@ module.exports = (io, userSockets) => {
           complaintId,
           { $set: { status } },
           { new: true, runValidators: true }
-      ).populate("userId", "firstName lastName phone address");
+      ).populate("userId", "firstName lastName email phone address");
 
       if (!complaint) {
         console.error("Complaint not found:", complaintId);
@@ -109,6 +134,13 @@ module.exports = (io, userSockets) => {
       }
 
       io.emit("complaintUpdated", { complaintId, status });
+
+      // ===== Send email to the complaint owner about status =====
+      if (complaint.userId?.email) {
+        const subject = `Complaint Status Updated: ${complaint.category}`;
+        const text = `Hello ${complaint.userId.firstName},\n\nYour complaint under category "${complaint.category}" has been updated to status: "${status}".\n\nThank you for using our service.`;
+        sendEmail(complaint.userId.email, subject, text);
+      }
 
       res.json(complaint);
     } catch (err) {
