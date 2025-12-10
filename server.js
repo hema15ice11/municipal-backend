@@ -22,9 +22,7 @@ const server = http.createServer(app);
 const allowedOrigins = [
     'http://localhost:5173',  
     'https://mcc-frontend.vercel.app',
-    'https://symphonious-bienenstitch-c515ec.netlify.app/',
-    // local frontend
-    'https://mcc-frontend.onrender.com'   // deployed frontend
+    'https://symphonious-bienenstitch-c515ec.netlify.app/'
 ];
 
 // =========================
