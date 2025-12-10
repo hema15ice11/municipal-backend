@@ -20,7 +20,9 @@ const server = http.createServer(app);
 // ✅ Allowed origins for CORS
 // =========================
 const allowedOrigins = [
-    'http://localhost:5173',               // local frontend
+    'http://localhost:5173',  
+    'https://mcc-frontend.vercel.app',
+    // local frontend
     'https://mcc-frontend.onrender.com'   // deployed frontend
 ];
 
